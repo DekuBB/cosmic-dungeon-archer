@@ -1,4 +1,4 @@
-# 🎮 Neon Nexus Crawler
+# 🎮 Cosmic Dungeon Archer
 
 A high-octane roguelike shooter inspired by Archero, featuring Web3 token rewards on Base network and seamless Farcaster integration.
 
