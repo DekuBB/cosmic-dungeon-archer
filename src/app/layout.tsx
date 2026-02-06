@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { Web3Provider } from '@/components/game/Web3Provider';
 import FarcasterWrapper from "@/components/FarcasterWrapper";
+import { Analytics } from '@vercel/analytics/next';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -57,6 +58,7 @@ export default function RootLayout({
             {children}
           </FarcasterWrapper>
         </Web3Provider>
+        <Analytics />
       </body>
     </html>
   );
