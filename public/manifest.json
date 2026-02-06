@@ -1,0 +1,19 @@
+{
+  "name": "Cosmic Dungeon Archer",
+  "short_name": "CDA",
+  "description": "Epic roguelike with crypto rewards on Base blockchain",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "theme_color": "#06B6D4",
+  "background_color": "#000000",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "https://usdozf7pplhxfvrl.public.blob.vercel-storage.com/8ec38550-6b36-41b2-b2e1-a7c43ecfdcc7-fPHg3xxiBl3omQn3QlD3DJuAXVukJA",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
