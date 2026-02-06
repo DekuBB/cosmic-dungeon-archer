@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+@layer base {
+  * {
+    border-color: #27272a;
+  }
+
+  body {
+    @apply bg-black text-white;
+    font-family: var(--font-geist-sans);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Neon glow effects */
+  .neon-cyan {
+    color: #00F0FF;
+    text-shadow: 0 0 10px #00F0FF, 0 0 20px #00F0FF, 0 0 30px #00F0FF;
+  }
+  
+  .neon-magenta {
+    color: #FF00FF;
+    text-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF, 0 0 30px #FF00FF;
+  }
+  
+  .neon-yellow {
+    color: #FFD700;
+    text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700;
+  }
+
+  /* Prevent mobile zoom and scrolling */
+  html,
+  body {
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
