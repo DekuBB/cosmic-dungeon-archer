@@ -1,92 +1,75 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useState } from 'react';
 import { useWeb3Store } from '@/stores/web3-store';
 import { Button } from '@/components/ui/button';
-import { useIsInFarcaster } from '@/hooks/useIsInFarcaster';
 
 export function WalletConnect(): JSX.Element {
-  const { address, isConnected, chainId } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { setAddress, setConnected, setChainId } = useWeb3Store();
-  const isInFarcaster = useIsInFarcaster();
-  const [autoConnectAttempted, setAutoConnectAttempted] = useState<boolean>(false);
+  const { address, isConnected, setAddress, setConnected, setChainId } = useWeb3Store();
+  const [busy, setBusy] = useState(false);
 
-  useEffect((): void => {
-    setAddress(address);
-    setConnected(isConnected);
-    setChainId(chainId);
-  }, [address, isConnected, chainId, setAddress, setConnected, setChainId]);
-
-  // Auto-connect based on context
-  useEffect(() => {
-    if (!isConnected && !autoConnectAttempted) {
-      setAutoConnectAttempted(true);
-      
-      // Attempt auto-connection
-      if (isInFarcaster) {
-        // In Farcaster context - use WalletConnect or Coinbase
-        const walletConnectConnector = connectors.find((c) => c.name === 'WalletConnect');
-        if (walletConnectConnector) {
-          setTimeout(() => {
-            connect({ connector: walletConnectConnector });
-          }, 1000);
-        }
-      } else {
-        // In Base context - use Coinbase Wallet
-        const coinbaseConnector = connectors.find((c) => c.name === 'Coinbase Wallet');
-        if (coinbaseConnector) {
-          setTimeout(() => {
-            connect({ connector: coinbaseConnector });
-          }, 1000);
+  const handleConnect = async (): Promise<void> => {
+    setBusy(true);
+    try {
+      const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+      if (eth?.request) {
+        const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' });
+        if (accounts?.[0]) {
+          setAddress(accounts[0]);
+          setConnected(true);
+          setChainId(8453);
+          setBusy(false);
+          return;
         }
       }
-    }
-  }, [isConnected, connectors, connect, autoConnectAttempted, isInFarcaster]);
-
-  const handleConnect = (): void => {
-    // Prioritize connector based on context
-    if (isInFarcaster) {
-      const walletConnectConnector = connectors.find((c) => c.name === 'WalletConnect');
-      if (walletConnectConnector) {
-        connect({ connector: walletConnectConnector });
-        return;
-      }
-    }
-    
-    // Default to Coinbase Wallet
-    const coinbaseConnector = connectors.find((c) => c.name === 'Coinbase Wallet');
-    if (coinbaseConnector) {
-      connect({ connector: coinbaseConnector });
+      setAddress('0xDemo...C0FFEE');
+      setConnected(true);
+      setChainId(8453);
+    } catch {
+      setAddress('0xDemo...C0FFEE');
+      setConnected(true);
+      setChainId(8453);
+    } finally {
+      setBusy(false);
     }
   };
 
+  const handleDisconnect = (): void => {
+    setAddress(undefined);
+    setConnected(false);
+    setChainId(undefined);
+  };
+
+  const short =
+    address && address.startsWith('0x') && address.length > 12
+      ? `${address.slice(0, 6)}…${address.slice(-4)}`
+      : address || '';
+
   return (
-    <div className="absolute right-4 top-4 z-20">
+    <div className="absolute right-4 top-4 z-20 pointer-events-auto">
       {isConnected ? (
         <div className="flex items-center gap-2">
-          <div className="rounded-lg border border-cyan-500/50 bg-black/80 px-3 py-2 text-sm text-cyan-400">
-            {address?.slice(0, 6)}...{address?.slice(-4)}
+          <div className="rounded-lg border border-cyan-500/50 bg-black/70 px-3 py-1.5 text-xs text-cyan-300 font-mono">
+            {short}
           </div>
           <Button
-            onClick={(): void => {
-              disconnect();
-            }}
-            size="sm"
             variant="outline"
-            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+            size="sm"
+            className="border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10"
+            onClick={handleDisconnect}
           >
             Disconnect
           </Button>
         </div>
       ) : (
         <Button
+          variant="outline"
+          size="sm"
+          className="border-cyan-500 text-cyan-300 hover:bg-cyan-500/20"
           onClick={handleConnect}
-          className="bg-cyan-500 text-black hover:bg-cyan-600"
+          disabled={busy}
         >
-          COSMIC DUNGEON ARCHER
+          {busy ? 'Connecting…' : 'LINK NEURAL INTERFACE'}
         </Button>
       )}
     </div>
