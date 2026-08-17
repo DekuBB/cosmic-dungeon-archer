@@ -1,20 +1,10 @@
-import { createLogger, format, transports } from "winston";
-
-const logger = createLogger({
-  level: "info",
-  format: format.combine(
-    format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    format.json(),
-    format.errors({ stack: true })
-  ),
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: "../output.log" }),
-  ],
-  exceptionHandlers: [
-    new transports.Console(),
-    new transports.File({ filename: "../error.log" }),
-  ],
-});
+const logger = {
+  log: (level: string, data: unknown) => {
+    console.log(`[${level}]`, data);
+  },
+  info: (...args: unknown[]) => console.log('[info]', ...args),
+  error: (...args: unknown[]) => console.error('[error]', ...args),
+  warn: (...args: unknown[]) => console.warn('[warn]', ...args),
+};
 
 export default logger;
