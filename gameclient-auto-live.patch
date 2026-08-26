@@ -1,0 +1,72 @@
+diff --git a/src/components/game/GameClient.tsx b/src/components/game/GameClient.tsx
+--- a/src/components/game/GameClient.tsx
++++ b/src/components/game/GameClient.tsx
+@@ -10,6 +10,8 @@ import { Settings } from '@/components/menu/Settings';
+ import { useGameStore } from '@/stores/game-store';
+ import { loadProgress, updateDungeonProgress } from '@/lib/progress-storage';
+ import { GAME_CONFIG } from '@/lib/game-config';
+ import { GameErrorBoundary } from '@/components/GameErrorBoundary';
++import { AutoLiveController } from './AutoLiveController';
++import { AutoLiveOverlay } from './AutoLiveOverlay';
+
+ type GameScreen = 'menu' | 'dungeons' | 'rankings' | 'settings' | 'wallet' | 'game';
+
+ export function GameClient(): JSX.Element {
+@@ -20,6 +22,7 @@ export function GameClient(): JSX.Element {
+   const [loadingError, setLoadingError] = useState<string | null>(null);
+   const [currentScreen, setCurrentScreen] = useState<GameScreen>('menu');
+   const [gameStartTime, setGameStartTime] = useState<number>(0);
++  const [isAutoLiveMode] = useState<boolean>(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('live') === '1');
+   const { isDrafting, isAlive, setDungeon, currentDungeon, currentStage, score } = useGameStore();
+
++  // AUTO LIVE MODE: ?live=1 skips the menu and starts an unattended run.
++  useEffect(() => {
++    if (!isAutoLiveMode) return;
++    const progress = loadProgress();
++    setDungeon(progress.currentDungeon);
++    setCurrentScreen('game');
++    setGameStartTime(Date.now());
++  }, [isAutoLiveMode, setDungeon]);
++
+   // Watch for game end to save progress
+   useEffect(() => {
+     if (!isAlive && gameStartTime > 0) {
+@@ -82,6 +95,9 @@ export function GameClient(): JSX.Element {
+             if (mainScene) {
+               sceneRef.current = mainScene;
++              if (isAutoLiveMode) {
++                (window as unknown as { __COSMIC_MAIN_SCENE__?: any }).__COSMIC_MAIN_SCENE__ = mainScene;
++              }
+               isInitialized = true;
+               setIsLoading(false);
+               clearTimeout(timeoutId);
+@@ -106,6 +122,9 @@ export function GameClient(): JSX.Element {
+         game.destroy(true);
+         gameRef.current = null;
+         sceneRef.current = null;
++        if (isAutoLiveMode) {
++          delete (window as unknown as { __COSMIC_MAIN_SCENE__?: any }).__COSMIC_MAIN_SCENE__;
++        }
+       }
+     };
+-  }, [currentScreen]);
++  }, [currentScreen, isAutoLiveMode]);
+@@ -193,11 +212,18 @@ export function GameClient(): JSX.Element {
+       {/* Game UI Overlays */}
+       {!isLoading && !loadingError && currentScreen === 'game' && (
+         <>
+           <HUD />
+-          <MobileControls />
+-          <DraftScreen />
+-          <DeathScreen onBackToMenu={handleBackToMenu} />
++          {!isAutoLiveMode && <MobileControls />}
++          {!isAutoLiveMode && <DraftScreen />}
++          {!isAutoLiveMode && <DeathScreen onBackToMenu={handleBackToMenu} />}
++          {isAutoLiveMode && <AutoLiveController />}
++          {isAutoLiveMode && <AutoLiveOverlay />}
+         </>
+       )}
+       </div>
+     </GameErrorBoundary>
+   );
+ }
